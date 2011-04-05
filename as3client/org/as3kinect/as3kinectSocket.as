@@ -27,16 +27,20 @@
  
  package org.as3kinect {
 	 
-	import org.as3kinect.as3kinect;
-	import org.as3kinect.events.as3kinectSocketEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
-	
+	import flash.events.ProgressEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.net.Socket;
+	import flash.system.Security;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	
+	import mx.core.Singleton;
+	
+	import org.as3kinect.as3kinect;
+	import org.as3kinect.events.as3kinectSocketEvent;
 
 	/**
 	 * as3kinectSocket class recieves Kinect data from the as3kinect driver.
@@ -44,36 +48,36 @@
 	public class as3kinectSocket extends EventDispatcher
 	{
 		private static var _instance:as3kinectSocket;
-		private static var _singleton_lock:Boolean = false;
 		
-		private var _first_byte:Number;
-		private var _second_byte:Number;
-		private var _packet_size:Number;
+		private var _firstByte:uint;
+		private var _secondByte:uint;
+		private var _packetSize:uint;
 		private var _socket:Socket;
-		private var _buffer:ByteArray;
-		private var _data_obj:Object;
 		private var _port:Number;
 
-		public function as3kinectSocket()
+		public function as3kinectSocket(singleton:Singleton)
 		{		
-			if ( !_singleton_lock ) throw new Error( 'Use as3kinectSocket.instance' );
 			_socket = new Socket();
-			_buffer = new ByteArray();
-			_data_obj = new Object();
-
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
-			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
+			_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketSecurityError);
+			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketIOError);
 			_socket.addEventListener(Event.CONNECT, onSocketConnect);
+			
+			_socket.endian = Endian.LITTLE_ENDIAN; 
 		}
 		
 		public function connect(host:String = 'localhost', port:uint = 6001):void
 		{
 			_port = port;
-			_packet_size = 0;
-			if (!this.connected) 
+			
+			if (!this.connected)
+			{
 				_socket.connect(host, port);
+			}
 			else
+			{
 				dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONCONNECT, null));
+			}
 		}
 		
 		public function get connected():Boolean
@@ -83,15 +87,19 @@
 		
 		public function close():void
 		{
-			_socket.close();
+			if (this.connected) _socket.close();
 		}
 		
-		public function sendCommand(data:ByteArray):int{
-			if(data.length == as3kinect.COMMAND_SIZE){
+		public function sendCommand(data:ByteArray):int
+		{
+			if(data.length == as3kinect.COMMAND_SIZE)
+			{
 				_socket.writeBytes(data, 0, as3kinect.COMMAND_SIZE);
 				_socket.flush();
 				return as3kinect.SUCCESS;
-			} else {
+			}
+			else
+			{
 				throw new Error( 'Incorrect data size (' + data.length + '). Expected: ' + as3kinect.COMMAND_SIZE);
 				return as3kinect.ERROR;
 			}
@@ -99,48 +107,64 @@
 		
 		private function onSocketData(event:ProgressEvent):void
 		{
-			if(_socket.bytesAvailable > 0) {
-				if(_packet_size == 0) {
-					_socket.endian = Endian.LITTLE_ENDIAN;
-					_first_byte = _socket.readByte();
-					_second_byte = _socket.readByte();
-					_packet_size = _socket.readInt();
+			while (_socket.bytesAvailable > 0)
+			{
+				if(_socket.bytesAvailable > 6 && _packetSize == 0)
+				{
+					_firstByte = _socket.readUnsignedByte();
+					_secondByte = _socket.readUnsignedByte();
+					_packetSize = _socket.readUnsignedInt();					
 				}
-				if(_socket.bytesAvailable >= _packet_size && _packet_size != 0){
-					_socket.readBytes(_buffer, 0, _packet_size);
-					_buffer.endian = Endian.LITTLE_ENDIAN;
-					_buffer.position = 0;
-					_data_obj.first = _first_byte;
-					_data_obj.second = _second_byte;
-					_data_obj.buffer = _buffer;
-					_packet_size = 0;
-					dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONDATA, _data_obj));
+				
+				if(_packetSize != 0 && _socket.bytesAvailable >= _packetSize)
+				{
+					var buffer:ByteArray = new ByteArray();
+					buffer.endian = Endian.LITTLE_ENDIAN;
+					
+					_socket.readBytes(buffer, 0, _packetSize);
+					
+					buffer.position = 0;
+					
+					var dataObject:Object = {};
+					
+					dataObject.first = _firstByte;
+					dataObject.second = _secondByte;
+					dataObject.buffer = buffer;
+					
+					dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONDATA, dataObject));
+					_packetSize = 0;
 				}
-			}
+				else
+				{
+					return;
+				}
+			}			
 		}
 		
-		private function onSocketError(event:IOErrorEvent):void{
+		private function onSocketSecurityError(event:SecurityErrorEvent):void
+		{
 			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONERROR, null));
 		}
 		
-		private function onSocketConnect(event:Event):void{
+		private function onSocketIOError(event:IOErrorEvent):void
+		{
+			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONERROR, null));
+		}
+		
+		private function onSocketConnect(event:Event):void
+		{
 			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONCONNECT, null));
 		}
 
-		public function set instance(instance:as3kinectSocket):void 
-		{
-			throw new Error('as3kinectSocket.instance is read-only');
-		}
-		
 		public static function get instance():as3kinectSocket 
 		{
 			if ( _instance == null )
 			{
-				_singleton_lock = true;
-				_instance = new as3kinectSocket();
-				_singleton_lock = false;
+				_instance = new as3kinectSocket(new Singleton());
 			}
 			return _instance;
 		}
 	}
 }
+
+class Singleton {}

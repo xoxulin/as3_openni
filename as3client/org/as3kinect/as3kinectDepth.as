@@ -42,15 +42,17 @@ package org.as3kinect {
 			_socket = as3kinectSocket.instance;
 			_data = new ByteArray;
 			_depth_busy = false;
-			bitmap = new BitmapData(as3kinect.IMG_WIDTH, as3kinect.IMG_HEIGHT, false, 0xFF000000);
+			bitmap = new BitmapData(as3kinect.IMG_WIDTH, as3kinect.IMG_HEIGHT, true, 0x00000000);
 		}
 
 		/*
 		 * Tell server to send the latest depth frame
 		 * Note: We should lock the command while we are waiting for the data to avoid lag
 		 */
-		public function getBuffer():void {
-			if(!_depth_busy){
+		public function getBuffer():void
+		{
+			if(!_depth_busy && _socket.connected)
+			{
 				_depth_busy = true;
 				_data.clear();
 				_data.writeByte(as3kinect.CAMERA_ID);

@@ -26,41 +26,79 @@
 
  package org.as3kinect {
 	
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.events.EventDispatcher;
+	import flash.geom.Rectangle;
+	import flash.text.TextField;
+	import flash.utils.ByteArray;
+	import flash.utils.setTimeout;
+	
+	import mx.core.Singleton;
+	
 	import org.as3kinect.as3kinect;
-	import org.as3kinect.as3kinectSocket;
 	import org.as3kinect.as3kinectDepth;
 	import org.as3kinect.as3kinectSkeleton;
+	import org.as3kinect.as3kinectSocket;
+	import org.as3kinect.events.KinectGestureEvent;
+	import org.as3kinect.events.KinectHandEvent;
+	import org.as3kinect.events.KinectUserEvent;
 	import org.as3kinect.events.as3kinectSocketEvent;
 	import org.as3kinect.events.as3kinectWrapperEvent;
 	
-	import flash.utils.ByteArray;
-	import flash.display.BitmapData;
-	import flash.display.Bitmap;
-	import flash.geom.Rectangle;
-	import flash.events.EventDispatcher;
-	import flash.text.TextField;
-	
 	public class as3kinectWrapper extends EventDispatcher {
 
+		private static var _instance:as3kinectWrapper;
+		
 		private var _socket:as3kinectSocket;
 		private var _data:ByteArray;
-		private var _console:TextField;
-		private var _debugging:Boolean = false;
+		private var _debugging:Boolean = true;
 		private var user_id:Number;
+		
+		private var _startCallback:Function;
 		
 		public var depth:as3kinectDepth;
 		public var skel:as3kinectSkeleton;
 
-		public function as3kinectWrapper() {
+		public function as3kinectWrapper(singleton:Singleton) {
 			depth = new as3kinectDepth();			
 			skel = new as3kinectSkeleton();
+			
 			/* Init socket objects */
 			_socket = as3kinectSocket.instance;
-			_socket.connect(as3kinect.SERVER_IP, as3kinect.SOCKET_PORT);
+			
 			_socket.addEventListener(as3kinectSocketEvent.ONDATA, dataReceived);
+			_socket.addEventListener(as3kinectSocketEvent.ONCONNECT, connectedHandler);
+			_socket.addEventListener(as3kinectSocketEvent.ONERROR, errorHandler);
+			
+			connect();
+			
 			
 			/* Init data out buffer */
 			_data = new ByteArray();
+		}
+		
+		public function set startCallback(value:Function):void
+		{
+			_startCallback = value;
+		}
+		
+		private function connect():void
+		{
+			_socket.connect(as3kinect.SERVER_IP, as3kinect.SOCKET_PORT);			
+		}
+		
+		private function connectedHandler(event:as3kinectSocketEvent):void
+		{
+			//trace("_socket.connected");
+			if (_startCallback != null) _startCallback.call(this);
+		}
+		
+		private function errorHandler(event:as3kinectSocketEvent):void
+		{
+			//trace("_socket.error");
+			_socket.close();
+			setTimeout(connect, 5000);
 		}
 
 		/*
@@ -70,24 +108,22 @@
 		 *	0 -> Camera data
 		 * 			second:
 		 *  			0 -> Depth ARGB received
-		 *  			1 -> Video ARGB received
-		 *  			2 -> Skeleton data received
+		 *  			1 -> Video ARGB received		 
 		 *	1 -> Motor data
 		 *	2 -> Microphone data
 		 *	3 -> Server data
 		 * 			second:
 		 *  			0 -> Debug info received
 		 *  			1 -> Got user
-		 *  			2 -> Lost user
-		 *  			3 -> Pose detected for user
-		 *  			4 -> Calibrating user
-		 *  			5 -> Calibration complete for user
-		 *  			6 -> Calibration failed for user
+		 *  			2 -> Lost user		 		 
 		 *
 		 */
-		private function dataReceived(event:as3kinectSocketEvent):void{
+		private function dataReceived(event:as3kinectSocketEvent):void
+		{
 			// Send ByteArray to position 0
+			
 			event.data.buffer.position = 0;
+			
 			switch (event.data.first) {
 				case 0: //Camera
 					switch (event.data.second) {
@@ -95,13 +131,9 @@
 							dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_DEPTH, event.data.buffer));
 							depth.busy = false;
 						break;
-						case 1: //Video received
-							//dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_DEPTH, event.data));
+						case 1: //Video received							
 						break;
-						case 2: //SKEL received
-							skel.processSkeleton(event.data.buffer);
-							dispatchEvent(new as3kinectWrapperEvent(as3kinectWrapperEvent.ON_SKEL, skel.skeletons));
-							skel.busy = false;
+						case 2: //SKEL received							
 						break;
 					}
 				break;
@@ -112,49 +144,70 @@
 				case 3: //Server
 					switch (event.data.second) {
 						case 0: //Debug received
-							if(_debugging) _console.appendText(event.data.buffer.toString());
+							trace(event.data.buffer.readUTFBytes(event.data.buffer.bytesAvailable)+"\n");
 						break;
 						case 1: //Got user
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Got user: " + user_id + "\n");
+							dispatchEvent(new KinectUserEvent(KinectUserEvent.USER_CREATE, event.data.buffer));
+						break;
+						case 12: //User CoM update
+							dispatchEvent(new KinectUserEvent(KinectUserEvent.USER_UPDATE, event.data.buffer));
 						break;
 						case 2: //Lost user
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Lost user: " + user_id + "\n");
-							skel.tracked_users.pop();
+							dispatchEvent(new KinectUserEvent(KinectUserEvent.USER_DELETE, event.data.buffer));							
 						break;
-						case 3: //Pose detected
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Pose detected for user: " + user_id + "\n");
+						case 3: //Pose detected							
 						break;
-						case 4: //Calibrating
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibrating user: " + user_id + "\n");
+						case 4: //Calibrating							
 						break;
-						case 5: //Calibration complete
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibration complete for user: " + user_id + "\n");
-							skel.tracked_users.push(user_id);
+						case 5: //Calibration complete							
 						break;
-						case 6: //Calibration failed
-							user_id = event.data.buffer.readInt();
-							if(_debugging) _console.appendText("Calibration failed for user: " + user_id + "\n");
+						case 6: //Calibration failed							
 						break;
+						
+						// - - - new nodes for hand tracking
+						
+						case 7: //Gesture reconized
+							dispatchEvent(new KinectGestureEvent(KinectGestureEvent.GESTURE_RECOGNIZED, event.data.buffer));
+						break;
+						case 8: //Gesture progress
+							dispatchEvent(new KinectGestureEvent(KinectGestureEvent.GESTURE_PROGRESS, event.data.buffer));
+						break;
+						case 9: //New Hand
+							dispatchEvent(new KinectHandEvent(KinectHandEvent.HAND_CREATE, event.data.buffer));
+						break;
+						case 10: //Hand Update
+							dispatchEvent(new KinectHandEvent(KinectHandEvent.HAND_UPDATE, event.data.buffer));
+						break;
+						case 11: //Lost Hand
+							dispatchEvent(new KinectHandEvent(KinectHandEvent.HAND_DELETE, event.data.buffer));
+						break;						
 					}
 				break;
 			}
+			
 			// Clear ByteArray after used
 			event.data.buffer.clear();
 		}
 		
-		/*
-		 * Enable log console on TextField
-		 */
-		public function set logConsole(txt:TextField){
-			_debugging = true;
-			_console = txt;
-			_console.text = "=== Started console ===\n";
+		public function get running():Boolean
+		{
+			return _socket.connected;
 		}
-	}
-	
+		
+		public function close():void
+		{
+			_socket.close();
+		}
+		
+		public static function get instance():as3kinectWrapper 
+		{
+			if ( _instance == null )
+			{
+				_instance = new as3kinectWrapper(new Singleton());
+			}
+			return _instance;
+		}
+	}	
 }
+
+class Singleton {}
