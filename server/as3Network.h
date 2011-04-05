@@ -41,11 +41,13 @@ class as3Network {
 		void close_connection();
 		int sendData(unsigned char *buffer, int length);
 		int getData(unsigned char *buffer, int length);
-		void sendMessage(const char *msg);
-		void sendMessage(int first, int second, int value);
-		void sendMessage(int first, int second, unsigned char *data, const int len);
+		
+		void sendMessage(const char *message);
+		void sendMessage(unsigned char first, unsigned char second, unsigned int value);
+		void sendMessage(unsigned char first, unsigned char second, unsigned char *message, const unsigned int len);
+		
 		void wait_client();
 	private:
-		void send_policy_file(int child);
+		//void send_policy_file();
 		int initServer(addrinfo si_type, PCSTR conf_port, SOCKET *the_socket, PCSTR label);
 };
