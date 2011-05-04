@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="as3Network.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="as3Network.h" />
+    <ClInclude Include="deps\include\pthread\sched.h" />
+    <ClInclude Include="deps\include\pthread\semaphore.h" />
+    <ClInclude Include="deps\include\pthread\pthread.h" />
+    <ClInclude Include="openni\Include\Win32\XnOSWin32.h" />
+    <ClInclude Include="openni\Include\Win32\XnPlatformWin32.h" />
+    <ClInclude Include="openni\Include\IXnNodeAllocator.h" />
+    <ClInclude Include="openni\Include\XnBaseNode.h" />
+    <ClInclude Include="openni\Include\XnCallback.h" />
+    <ClInclude Include="openni\Include\XnCodecIDs.h" />
+    <ClInclude Include="openni\Include\XnContext.h" />
+    <ClInclude Include="openni\Include\XnCppWrapper.h" />
+    <ClInclude Include="openni\Include\XnDataTypes.h" />
+    <ClInclude Include="openni\Include\XnEnumerationErrors.h" />
+    <ClInclude Include="openni\Include\XnEvent.h" />
+    <ClInclude Include="openni\Include\XnFPSCalculator.h" />
+    <ClInclude Include="openni\Include\XnGeneralBuffer.h" />
+    <ClInclude Include="openni\Include\XnHash.h" />
+    <ClInclude Include="openni\Include\XnInternalDefs.h" />
+    <ClInclude Include="openni\Include\XnLicensing.h" />
+    <ClInclude Include="openni\Include\XnList.h" />
+    <ClInclude Include="openni\Include\XnLog.h" />
+    <ClInclude Include="openni\Include\XnMacros.h" />
+    <ClInclude Include="openni\Include\XnModuleCppInterface.h" />
+    <ClInclude Include="openni\Include\XnModuleCppRegistratration.h" />
+    <ClInclude Include="openni\Include\XnModuleInterface.h" />
+    <ClInclude Include="openni\Include\XnNode.h" />
+    <ClInclude Include="openni\Include\XnNodeAllocator.h" />
+    <ClInclude Include="openni\Include\XnOpenNI.h" />
+    <ClInclude Include="openni\Include\XnOS.h" />
+    <ClInclude Include="openni\Include\XnOSCpp.h" />
+    <ClInclude Include="openni\Include\XnPlatform.h" />
+    <ClInclude Include="openni\Include\XnPrdNode.h" />
+    <ClInclude Include="openni\Include\XnPrdNodeInfo.h" />
+    <ClInclude Include="openni\Include\XnPrdNodeInfoList.h" />
+    <ClInclude Include="openni\Include\XnProfiling.h" />
+    <ClInclude Include="openni\Include\XnPropNames.h" />
+    <ClInclude Include="openni\Include\XnQueries.h" />
+    <ClInclude Include="openni\Include\XnQueue.h" />
+    <ClInclude Include="openni\Include\XnScheduler.h" />
+    <ClInclude Include="openni\Include\XnStack.h" />
+    <ClInclude Include="openni\Include\XnStatus.h" />
+    <ClInclude Include="openni\Include\XnStatusCodes.h" />
+    <ClInclude Include="openni\Include\XnStatusRegister.h" />
+    <ClInclude Include="openni\Include\XnStringsHash.h" />
+    <ClInclude Include="openni\Include\XnThreadSafeQueue.h" />
+    <ClInclude Include="openni\Include\XnTypes.h" />
+    <ClInclude Include="openni\Include\XnUSB.h" />
+    <ClInclude Include="openni\Include\XnUtils.h" />
+    <ClInclude Include="openni\Include\XnVersion.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="openni\Lib\NiSampleModule.exp" />
+    <None Include="openni\Lib\openNI.exp" />
+    <None Include="openni\Lib\Lib\NiSampleModule.exp" />
+    <None Include="deps\lib\libpthreadGC2.a" />
+    <None Include="deps\lib\libpthreadGCE2.a" />
+    <None Include="deps\lib\pthreadGC2.dll" />
+    <None Include="deps\lib\pthreadGCE2.dll" />
+    <None Include="deps\lib\pthreadVC2.dll" />
+    <None Include="deps\lib\pthreadVSE2.dll" />
+    <None Include="bin\Debug\as3server_config.xml" />
+    <None Include="SamplesConfig.xml" />
+    <None Include="bin\Debug\SamplesConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="openni\Lib\NiSampleModule.lib" />
+    <Library Include="openni\Lib\openNI.lib" />
+    <Library Include="openni\Lib\Lib\NiSampleModule.lib" />
+    <Library Include="deps\lib\pthreadVC2.lib" />
+    <Library Include="deps\lib\pthreadVSE2.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="bin\Release\as3-server.exe.intermediate.manifest" />
+  </ItemGroup>
+</Project>

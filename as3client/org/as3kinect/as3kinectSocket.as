@@ -31,9 +31,7 @@
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
-	import flash.events.SecurityErrorEvent;
 	import flash.net.Socket;
-	import flash.system.Security;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
@@ -57,10 +55,10 @@
 
 		public function as3kinectSocket(singleton:Singleton)
 		{		
-			_socket = new Socket();
+			_socket = new Socket();						
+			
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
-			_socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSocketSecurityError);
-			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketIOError);
+			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketError);
 			_socket.addEventListener(Event.CONNECT, onSocketConnect);
 			
 			_socket.endian = Endian.LITTLE_ENDIAN; 
@@ -141,12 +139,7 @@
 			}			
 		}
 		
-		private function onSocketSecurityError(event:SecurityErrorEvent):void
-		{
-			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONERROR, null));
-		}
-		
-		private function onSocketIOError(event:IOErrorEvent):void
+		private function onSocketError(event:IOErrorEvent):void
 		{
 			dispatchEvent(new as3kinectSocketEvent(as3kinectSocketEvent.ONERROR, null));
 		}

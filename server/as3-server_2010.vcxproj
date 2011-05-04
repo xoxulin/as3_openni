@@ -54,19 +54,19 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../Include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>openNI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>openNI.lib;%(AdditionalDependencies);gdiplus.lib</AdditionalDependencies>
       <OutputFile>bin/$(Configuration)/$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>../Lib/;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -172,6 +172,9 @@
     <None Include="openni\Lib\Lib\NiSampleModule.exp" />
     <None Include="openni\Lib\NiSampleModule.exp" />
     <None Include="openni\Lib\openNI.exp" />
+    <None Include="SamplesConfig.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="deps\lib\pthreadVC2.lib" />
