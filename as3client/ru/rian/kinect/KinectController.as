@@ -37,7 +37,7 @@ package ru.rian.kinect
 	public class KinectController extends EventDispatcher
 	{
 		public static const ACTIVITY_CHANGED:String = "activityChanged";
-		public static const IDLE_TIMEOUT:uint = 300;
+		public static const IDLE_TIMEOUT:uint = 2000;
 		
 		private var _debugView:Sprite;
 		
@@ -58,7 +58,7 @@ package ru.rian.kinect
 		private var _currentStrategy:IKinectHandStrategy;
 		private var _strategyVector:Vector.<IKinectHandStrategy>;
 		
-		private var _idleThreshold:Number = 50;
+		private var _idleThreshold:Number = 30;
 		private var _idle:Boolean = true;
 		private var _idleTimeout:uint = 0;
 		
