@@ -21,7 +21,7 @@ package ru.rian.kinect.strategies.zero
 		
 		override public function enterFrameHandler(event:Event):void
 		{
-			_currentMatrix.appendRotation(0.5, Vector3D.Z_AXIS);
+			_currentMatrix.appendRotation(0.25, Vector3D.Z_AXIS);
 			
 			super.enterFrameHandler(event);
 		}

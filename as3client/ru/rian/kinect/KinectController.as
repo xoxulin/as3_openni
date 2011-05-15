@@ -14,7 +14,10 @@ package ru.rian.kinect
 	import flash.geom.ColorTransform;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.geom.Vector3D;
 	import flash.utils.Dictionary;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import org.as3kinect.as3kinect;
 	import org.as3kinect.as3kinectWrapper;
@@ -33,6 +36,9 @@ package ru.rian.kinect
 	
 	public class KinectController extends EventDispatcher
 	{
+		public static const ACTIVITY_CHANGED:String = "activityChanged";
+		public static const IDLE_TIMEOUT:uint = 300;
+		
 		private var _debugView:Sprite;
 		
 		private var _bitmap:Bitmap;
@@ -51,6 +57,10 @@ package ru.rian.kinect
 		
 		private var _currentStrategy:IKinectHandStrategy;
 		private var _strategyVector:Vector.<IKinectHandStrategy>;
+		
+		private var _idleThreshold:Number = 50;
+		private var _idle:Boolean = true;
+		private var _idleTimeout:uint = 0;
 		
 		public function KinectController(singleton:Singleton)
 		{
@@ -101,6 +111,7 @@ package ru.rian.kinect
 		public function set object3d(value:IObject3D):void
 		{
 			_object3d = value;
+			checkStrategy();
 		}
 		
 		public function get debugView():Sprite
@@ -137,6 +148,8 @@ package ru.rian.kinect
 		{
 			if (!_handSet[event.id]) return;
 			
+			idleAnalyse(event);
+			
 			var sprite:DisplayObject = _debugView.getChildByName("Hand"+event.id);
 			if (sprite)
 			{
@@ -163,6 +176,7 @@ package ru.rian.kinect
 		private function checkStrategy():void
 		{
 			if (_handCount > _strategyVector.length) _handCount = 0;
+			if (_handCount == 0) resetIdle(false);
 			currentStrategy = _strategyVector[_handCount];
 		}
 		
@@ -235,9 +249,61 @@ package ru.rian.kinect
 		private function loadCompleteHandler(event:Event):void
 		{
 			_bitmap.bitmapData.draw(_loader);
-			//_bitmap.bitmapData.copyChannel(_bitmap.bitmapData, _sourceERectangle, _sourcePoint, BitmapDataChannel.RED, BitmapDataChannel.ALPHA);
 			_bitmap.bitmapData.applyFilter(_bitmap.bitmapData, _sourceERectangle, _sourcePoint, _blurFilter);
 		}
+		
+		// - - - idle
+		
+		private function idleAnalyse(event:KinectHandEvent):void
+		{
+			var oldPosition:Vector3D = _handSet[event.id] as Vector3D;
+			var newPosition:Vector3D = event.position;
+			var oldPoint:Point = new Point(oldPosition.x, oldPosition.y);
+			var newPoint:Point = new Point(newPosition.x, newPosition.y);
+			
+			var delta:Point = newPoint.subtract(oldPoint);
+			
+			if (delta.length > _idleThreshold)
+			{
+				_handSet[event.id] = newPosition;
+				resetIdle();
+			}
+		}
+		
+		private function resetIdle(start:Boolean = true):void
+		{
+			resetTimeout();
+			if (start) _idleTimeout =   setTimeout(toIdle, IDLE_TIMEOUT);
+			if (_idle) toActivity();
+		}
+		
+		private function resetTimeout():void
+		{
+			if (_idleTimeout)
+			{
+				clearTimeout(_idleTimeout);
+				_idleTimeout = 0;
+			}
+		}
+		
+		private function toIdle():void
+		{
+			_idle = true;
+			dispatchEvent(new Event(ACTIVITY_CHANGED)); 
+		}
+		
+		private function toActivity():void
+		{
+			_idle = false;			
+			dispatchEvent(new Event(ACTIVITY_CHANGED));
+		}
+		
+		public function get idle():Boolean
+		{
+			return _idle;
+		}
+		
+		// - - - close
 		
 		public function close():void
 		{
