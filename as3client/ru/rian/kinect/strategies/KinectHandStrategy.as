@@ -11,6 +11,7 @@ package ru.rian.kinect.strategies
 	
 	import org.as3kinect.as3kinect;
 	import org.as3kinect.events.KinectHandEvent;
+	
 	import ru.rian.kinect.object3d.IObject3D;
 	
 	public class KinectHandStrategy implements IKinectHandStrategy
@@ -23,10 +24,9 @@ package ru.rian.kinect.strategies
 		protected var _currentMatrix:Matrix3D;
 		
 		protected var _handSet:Dictionary;
-		
-		protected var _time:uint = 0;
-		
 		protected var _scale:Number = 1;
+		protected var _time:uint = 0;
+		protected var _progress:Number;
 		
 		public function KinectHandStrategy()
 		{
@@ -39,7 +39,7 @@ package ru.rian.kinect.strategies
 		
 		public function enterFrameHandler(event:Event):void
 		{
-			geometryFix();
+			if (_progress < 1) geometryFix();
 			_object3D.matrix = _currentMatrix;
 		}
 		
@@ -47,6 +47,7 @@ package ru.rian.kinect.strategies
 		{
 			_object3D = value;
 			_time = getTimer();
+			_progress = 0;
 			if (_object3D) _currentMatrix = _object3D.matrix;
 		}
 		
@@ -57,16 +58,31 @@ package ru.rian.kinect.strategies
 		
 		protected function geometryFix():void
 		{
+			_progress = (getTimer() - _time)/TIMEOUT;
+			
 			var vector:Vector.<Vector3D> = _currentMatrix.decompose();
-			var scale:Number = _scale;
 			
-			var progress:Number = (getTimer() - _time)/TIMEOUT;
+			var scale:Number = vector[2].x;
+			var rotationX:Number = vector[1].x;
+			var rotationY:Number = vector[1].y;
 			
-			if (_scale != vector[2].x && progress <= 1)
+			if (0 != rotationX)
 			{
-				scale = vector[2].x * (1 - progress) + _scale * progress;				
+				rotationX = rotationX * (1 - _progress);				
 			}
 			
+			if (0 != rotationY)
+			{
+				rotationY = rotationY * (1 - _progress);				
+			}
+			
+			if (_scale != scale)
+			{
+				scale = vector[2].x * (1 - _progress) + _scale*_progress;				
+			}
+			
+			vector[1].x = rotationX;
+			vector[1].y = rotationY;
 			vector[2].x = vector[2].y = vector[2].z = scale;
 			
 			_currentMatrix.recompose(vector); 

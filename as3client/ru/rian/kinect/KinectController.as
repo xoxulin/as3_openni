@@ -37,7 +37,9 @@ package ru.rian.kinect
 	public class KinectController extends EventDispatcher
 	{
 		public static const ACTIVITY_CHANGED:String = "activityChanged";
-		public static const IDLE_TIMEOUT:uint = 2000;
+		public static const STRATEGY_CHANGED:String = "strategyChanged";
+		
+		public static const IDLE_TIMEOUT:uint = 1000;
 		
 		private var _debugView:Sprite;
 		
@@ -104,7 +106,7 @@ package ru.rian.kinect
 			_as3wrapper.addEventListener(KinectHandEvent.HAND_DELETE, removeHand);
 			
 			_as3wrapper.addEventListener(KinectUserEvent.USER_CREATE, userHandler);
-			_as3wrapper.addEventListener(KinectUserEvent.USER_UPDATE, userHandler);
+//			_as3wrapper.addEventListener(KinectUserEvent.USER_UPDATE, userHandler);
 			_as3wrapper.addEventListener(KinectUserEvent.USER_DELETE, userHandler);
 		}
 		
@@ -177,6 +179,7 @@ package ru.rian.kinect
 		{
 			if (_handCount > _strategyVector.length) _handCount = 0;
 			if (_handCount == 0) resetIdle(false);
+			dispatchEvent(new Event(STRATEGY_CHANGED));
 			currentStrategy = _strategyVector[_handCount];
 		}
 		
@@ -208,30 +211,30 @@ package ru.rian.kinect
 		
 		private function userHandler(event:KinectUserEvent):void
 		{
-			var sprite:DisplayObject;
+			//var sprite:DisplayObject;
 			
 			switch (event.type)
 			{
 				case KinectUserEvent. USER_CREATE:
-					sprite = new UserLabel();
-					(sprite as UserLabel).text = event.id.toString(); 
-					sprite.name = "User" + event.id;
+//					sprite = new UserLabel();
+//					(sprite as UserLabel).text = event.id.toString(); 
+//					sprite.name = "User" + event.id;
 					_userCount++;
-					_debugView.addChild(sprite);
-					TweenMax.fromTo(sprite, 0.5, {autoAlpha: 0}, {autoAlpha: 1});
+//					_debugView.addChild(sprite);
+//					TweenMax.fromTo(sprite, 0.5, {autoAlpha: 0}, {autoAlpha: 1});
 					break;
-				case KinectUserEvent.USER_UPDATE:
-					sprite = _debugView.getChildByName("User"+event.id);
-					if (sprite)
-					{
-						sprite.x = event.position.x;
-						sprite.y = event.position.y;							
-					}												
-					break;
+//				case KinectUserEvent.USER_UPDATE:
+//					sprite = _debugView.getChildByName("User"+event.id);
+//					if (sprite)
+//					{
+//						sprite.x = event.position.x;
+//						sprite.y = event.position.y;							
+//					}												
+//					break;
 				case KinectUserEvent.USER_DELETE:
-					sprite = _debugView.getChildByName("User"+event.id);
+//					sprite = _debugView.getChildByName("User"+event.id);
 					_userCount--;
-					if (sprite) TweenMax.to(sprite, 0.1, {autoAlpha: 0, onComplete: function():void {_debugView.removeChild(sprite);}});
+//					if (sprite) TweenMax.to(sprite, 0.1, {autoAlpha: 0, onComplete: function():void {_debugView.removeChild(sprite);}});
 					break;
 			}
 		}
@@ -301,6 +304,11 @@ package ru.rian.kinect
 		public function get idle():Boolean
 		{
 			return _idle;
+		}
+		
+		public function get automation():Boolean
+		{
+			return (_handCount == 0);
 		}
 		
 		// - - - close

@@ -12,7 +12,7 @@ package ru.rian.kinect.strategies.single
 	
 	public class TwoAngleRotatorStrategy extends KinectHandStrategy
 	{
-		private var horizontalDelta:Number = 90;
+		private var horizontalDelta:Number = 120;
 		private var verticalDelta:Number = 45;
 		
 		private var _defaultMatrix:Matrix3D = new Matrix3D();

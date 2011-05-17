@@ -643,7 +643,7 @@ int main(int argc, char **argv)
 
 	// - - - set smothing
 
-	g_HandsGenerator.SetSmoothing(0.2);
+	g_HandsGenerator.SetSmoothing(0.1);
 
 	// - - - create server
 	server = as3Network();
@@ -657,7 +657,7 @@ int main(int argc, char **argv)
 			// - - - update all
 			g_Context.WaitAndUpdateAll();
 			
-			getUsers();
+			//getUsers();
 			getUsersPixels(img_buffer);
 			compress(img_buffer, compress_buffer);
 		}
