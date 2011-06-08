@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="org.as3kinect.as3kinect"/>
+    <classEntry path="org.as3kinect.as3kinectDepth"/>
+    <classEntry path="org.as3kinect.as3kinectSkeleton"/>
+    <classEntry path="org.as3kinect.as3kinectSocket"/>
+    <classEntry path="org.as3kinect.as3kinectUtils"/>
+    <classEntry path="org.as3kinect.as3kinectWrapper"/>
+    <classEntry path="org.as3kinect.events.KinectGestureEvent"/>
+    <classEntry path="org.as3kinect.events.KinectHandEvent"/>
+    <classEntry path="org.as3kinect.events.KinectUserEvent"/>
+    <classEntry path="org.as3kinect.events.as3kinectSocketEvent"/>
+    <classEntry path="org.as3kinect.events.as3kinectWrapperEvent"/>
+    <classEntry path="org.as3kinect.objects.point3d"/>
+    <classEntry path="org.as3kinect.objects.skeleton3d"/>
+    <classEntry path="ru.rian.kinect.KinectController"/>
+    <classEntry path="ru.rian.kinect.controls.HandMarker"/>
+    <classEntry path="ru.rian.kinect.controls.UserLabel"/>
+    <classEntry path="ru.rian.kinect.object3d.IObject3D"/>
+    <classEntry path="ru.rian.kinect.strategies.IKinectHandStrategy"/>
+    <classEntry path="ru.rian.kinect.strategies.KinectHandStrategy"/>
+    <classEntry path="ru.rian.kinect.strategies.double.ThreeAngleRotatorStrategy"/>
+    <classEntry path="ru.rian.kinect.strategies.single.JoystickStrategy"/>
+    <classEntry path="ru.rian.kinect.strategies.single.TwoAngleRotatorStrategy"/>
+    <classEntry path="ru.rian.kinect.strategies.zero.ZeroHandStrategy"/>
+    <classEntry path="ru.rian.kinect.utils.Vector3DUtil"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>
